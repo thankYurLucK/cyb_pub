@@ -1,5 +1,6 @@
 # Cyb
-Twitter Bot
+Twitter Bot   
+example https://twitter.com/cyb_in_www
 
 # Setup
 Intallation: `pip install tweepy`   
