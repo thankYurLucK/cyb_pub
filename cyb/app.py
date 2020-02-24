@@ -1,4 +1,4 @@
-import argparse
+import argparse,tweepy
 from main.start import login,followFollower
 
 from main.interactions_timeline_account import commentLastestRetweets
@@ -10,6 +10,8 @@ from main.follower_handling import killFriendships,createFriendships
 from main.rate_limit import RateLimitStatusTimer
 
 from crazy.antibot_hunter import spam_Bot_messages
+
+from main.classes import Task
 
 
 parser = argparse.ArgumentParser(description='Running a bot')
@@ -45,37 +47,51 @@ print (args)
 
 api=login()
 
+tasks=[]
+
 if args.respond:
-    commentLastestRetweets(api)
+    tasks.append(Task(commentLastestRetweets,api))
 
 if args.follow:
-    followFollower(api)
+    tasks.append(Task(followFollower,api))
 
 
 if args.tweet_count:
     count=int(args.tweet_count)
 
-    [commentWithQutoes(api) for x in range(count)]
+    [tasks.append(Task(commentWithQutoes,api)) for x in range(count)]
+
+    
 
 if args.create_friends_count:
     count=int(args.create_friends_count)
-    
     # createFriendships
-    createFriendships(api,count)
+    tasks.append(Task(createFriendships,api,count))    
+
 
 if args.destroy_friends_count:
     count=int(args.destroy_friends_count)
 
     # killFriendships
-    killFriendships(api,count)
+    tasks.append(Task(killFriendships,api,count))    
+
 
 if args.check_rate:
+    
     tim=int(args.check_rate)
     x=RateLimitStatusTimer(api,tim)
     x.start()
 
 if args.message_count:
+    
     count=int(args.message_count)
     
     # spam messages
-    spam_Bot_messages(api,count)
+    tasks.append(Task(spam_Bot_messages,api,count))    
+
+for t in tasks:
+    try:
+        t.run()
+    except Exception as ex:
+        print(f"[-] error with task {t.task}")
+        print(f"Excepiton {ex}")
